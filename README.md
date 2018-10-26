@@ -1,2 +1,2 @@
 # CAMP
-Computer-Aided Musical Performance – Team Manatee Senior Capstone
+Computer-Assisted Musical Performance – Team Manatee Senior Capstone
