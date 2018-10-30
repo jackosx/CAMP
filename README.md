@@ -1,6 +1,8 @@
 # CAMP
 Computer-Assisted Musical Performance – Team Manatee (Aggregate) Senior Capstone
 
+![CAMP Diagram](https://github.com/jackosx/CAMP/blob/master/docs/assets/MIDI%20Diagram.jpeg)
+
 - Matty Barth - _Electrical Engineering_
 - Dan Katz - _Computer Science_
 - Matthew Langen - _Human Factors Engineering_
