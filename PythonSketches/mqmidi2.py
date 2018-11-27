@@ -2,7 +2,7 @@ import time
 import rtmidi
 import sys
 
-signal_cutoff = 350
+signal_cutoff = 500
 playing = False
 
 midiout = rtmidi.MidiOut()
@@ -40,13 +40,14 @@ def start_c(velocity=112):
     print("Note ON")
     global playing
     playing = True
-    midiout.send_message([0x90, 60+note, velocity])
+    midiout.send_message([0x90, 60, velocity])
 
 def stop_c():
     print("Note OFF")
     global playing
     playing = False
-    midiout.send_message([0x90, 60+note, 0])
+    midiout.send_message([0x90, 60, 0])
+
 
 import paho.mqtt.client as mqtt
 
@@ -66,7 +67,6 @@ count_max = 50
 note = 0
 def on_message(client, userdata, msg):
     global counter
-    global note
     # print(msg.topic+" "+str(msg.payload))
     # print("Playing:",playing)
     signal_mag = int(msg.payload)
@@ -74,21 +74,14 @@ def on_message(client, userdata, msg):
     if signal_mag > signal_cutoff and playing is True:
         stop_c()
 
-    #if playing is True:
+    if playing is True:
     #     counter = counter + 1
     #     if counter > count_max:
     #         counter = 0
-    #       start_c((signal_cutoff - signal_mag) * 127 / signal_cutoff)
+            start_c((signal_cutoff - signal_mag) * 127 / signal_cutoff)
 
-    if signal_mag < signal_cutoff:
-        temp_note = int(msg.topic[-1])
-        if playing is False:
-            note = temp_note
-            start_c(127)#min(signal_cutoff - 2*signal_mag, 127))
-        elif note != temp_note:
-            stop_c()
-            note = temp_note
-            start_c(127)
+    if signal_mag < signal_cutoff and playing is False:
+        start_c(min(signal_cutoff - signal_mag, 127))
 
 
 client = mqtt.Client()
