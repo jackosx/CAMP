@@ -6,6 +6,7 @@ def connect():
         sta_if.active(True)
         sta_if.connect('camp-manatee','iotwifipass')
         while not sta_if.isconnected():
+            print("Retrying...")
             pass
     print('network config:', sta_if.ifconfig())
 
@@ -16,3 +17,11 @@ def no_debug():
 
 no_debug()
 connect()
+
+import guitar
+import time
+
+def samp_guitar(calls, freq, v=False):
+    for i in range(calls):
+        guitar.sample(v)
+        time.sleep_ms(freq)
