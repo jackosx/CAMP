@@ -2,6 +2,7 @@
 
 from threading import Timer
 
+# Base RepeatedTimer class from:
 # https://stackoverflow.com/questions/474528/what-is-the-best-way-to-repeatedly-execute-a-function-every-x-seconds-in-python
 class RepeatedTimer(object):
     def __init__(self, interval, function, *args, **kwargs):
