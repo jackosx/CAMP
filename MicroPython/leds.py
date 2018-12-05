@@ -6,6 +6,7 @@
 #   leds.show_failure()
 
 import machine
+import time
 
 red_pin   = 15
 green_pin = 16
@@ -34,3 +35,9 @@ def show_success():
 def show_failure():
     red.high()
     green.low()
+
+def blink_all(secs):
+    all_on()
+    time.sleep(secs/2)
+    all_off()
+    time.sleep(secs/2)

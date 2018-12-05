@@ -1,36 +1,48 @@
 import time
 import config
+import leds
+leds.all_off()
 
 def connect(timeout=30):
+    leds.all_on() # All on indicates scanning
     import network
     target = b'camp-manatee'
     sta_if = network.WLAN(network.STA_IF)
+
+    # Returns list of SSIDs
     def get_available_networks():
         return [x[0] for x in sta_if.scan()]
+
     if not sta_if.isconnected():
         print('scanning networks...')
         sta_if.active(True)
-        for i in range(timeout):
+
+        # Scan nearby Wifi Access Points 15 times, looking for the target
+        for i in range(timeout//2):
             ssids = get_available_networks()
+            print(ssids)
+            # Once camp-manatee is found, try to connnect for 30 seconds
+            # Blinking indicates attempting to connect
             if target in ssids:
                 print("Found CAMP, connecting", end='')
                 sta_if.connect('camp-manatee','iotwifipass')
                 for i in range(timeout):
+                    # Visual progress indicators
                     print('.',end='')
-                    time.sleep(1)
+                    leds.blink_all(2) # Blink on 1 sec, blink off 1 sec
                     if sta_if.isconnected():
+                        leds.show_success()
                         print("Woo! Connected to CAMP Manatee")
                         print('network config:', sta_if.ifconfig())
                         break
                 print('')
                 break
-
-            print(ssids)
             print("Network not found. Retrying...")
             time.sleep(1)
 
         else:
             print("failed to connect, try again")
+            leds.show_failure()
 
 # Call to supress verbose wifi output
 def no_debug():
