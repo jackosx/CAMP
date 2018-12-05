@@ -163,7 +163,7 @@ class Instrument:
         print("Halting instrument sounds")
         for n_id, count in self.notes_on.items():
             for i in range(count):
-                self.midiout.send_message([0x80, n_id, 0])
+                self.midiout.send_message([0x80 + self.midi_channel, n_id, 0])
             self.notes_on[n_id] = 0
         # Neither of these were stopping the notes in Garageband
         # self.midiout.send_message([self.midi_channel, 120])
@@ -174,14 +174,14 @@ class Instrument:
     # del midiout
 
 class Guitar(Instrument):
-    def __init__(self, channel=0x0, key="C", octave=4):
+    def __init__(self, channel=0x0, key="C", octave=3):
         self.active_fret = 0
         self.set_key(key, octave)
         Instrument.__init__(self, channel)
 
     def set_key(self, key, octave):
         self.key    = "C"
-        self.octave =  4
+        self.octave =  octave
         self.chords = [Chords.get_five(key, octave=octave-1, use_names=True),
                        Chords.get_one(key, octave, True),
                        Chords.get_four(key, octave, True),
@@ -197,4 +197,13 @@ class Guitar(Instrument):
     # Need strum worker thread
     def strum(self, velocity=100):
         for note in self.chords[self.active_fret]:
-            self.play_note(note_name=note)
+            self.play_note(note_name=note, velocity=velocity)
+
+
+
+class Drum(Instrument):
+    def __init__(self, channel=10):
+        Instrument.__init__(self, channel)
+
+    def strike(self, drum_num, velocity):
+        self.play_note(midi_id=60+drum_num, velocity=velocity)

@@ -1,11 +1,19 @@
+"""
+Takes messages from ESP32 instruments and generates MIDI. Can use
+metronome class to quantize playing rhythm.
+
+Only supports single guitar right now.
+
+"""
+
 import paho.mqtt.client as mqtt
 import midi
-
 import metronome
 
 m = metronome.ticker.start()
 
-guitars = [midi.Guitar()]
+guitars = [midi.Guitar(octave=3)]
+drums = midi.Drum()
 
 def on_guitar_message(client, userdata, msg):
     print("Guitar Message", msg.topic, msg.payload)
@@ -23,6 +31,22 @@ def on_guitar_message(client, userdata, msg):
         elif user_action == 'f':
             guitar.set_fret(sensor_val)
 
+def on_drum_message(client, userdata, msg):
+    print("Drum Message", msg.topic, msg.payload)
+    # i/ d/id/ d/ s/ n
+    # 0| 2| 4| 6| 8|10
+    drumkit_num = int(msg.topic[4])
+    sensor_val = int(msg.payload)
+    action     = msg.topic[6]
+    if action == 'd': # d for 'data'
+        user_action = msg.topic[8]
+        print(user_action)
+        if user_action == 's': # s for strum
+            print("Drum")
+            drum_num = int(msg.topic[10])
+            drums.strike(drum_num, sensor_val)
+
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
@@ -32,6 +56,7 @@ def on_connect(client, userdata, flags, rc):
     # i/{g,d}/{inst_num}/{d,c}/[xtra]
     client.subscribe("i/+/+/#")
     client.message_callback_add("i/g/+/#", on_guitar_message) # for guitar messages
+    client.message_callback_add("i/d/+/#", on_drum_message)
 
 
 
