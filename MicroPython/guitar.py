@@ -1,20 +1,20 @@
+
 import machine
 from umqtt.simple import MQTTClient
+import config
 
-client = MQTTClient("guitar", "manatee.local")
+guitar_id = config.id
+
+client = MQTTClient("guitar-{}".format(config.id), "manatee.local")
 client.connect()
 
 # See wiki for pinout: https://github.com/jackosx/CAMP/wiki/ESP32-Hardware
-touch_D4  = machine.TouchPad(machine.Pin(4))
-touch_D32 = machine.TouchPad(machine.Pin(32))
-touch_D15 = machine.TouchPad(machine.Pin(15))
-touch_D13 = machine.TouchPad(machine.Pin(13))
-touch_D12 = machine.TouchPad(machine.Pin(12))
 
-fret_sensors = [touch_D4, touch_D32, touch_D13, touch_D15]
-strum_sensor = touch_D12
+fret_sensors = [machine.TouchPad(machine.Pin(p)) for p in config.fret_pins]
+strum_sensor = machine.TouchPad(machine.Pin(config.strum_pins[0]))
 
-touch_thresh = 600
+touch_thresh = config.threshold
+strum_thresh = config.strum_threshold
 
 active_fret = 0
 strumming = False
@@ -27,13 +27,13 @@ def update_fret(new_fret):
     print("NEW FRET",  new_fret)
     global active_fret
     active_fret = new_fret
-    client.publish('i/g/0/d/f', str(active_fret)) #TODO use config for id
+    client.publish('i/g/{}/d/f'.format(guitar_id), str(active_fret))
 
 def strum(velocity):
     global strumming
-    print("STRUM")
     strumming = True
-    client.publish('i/g/0/d/s', str(velocity)) #TODO use config for id
+    client.publish('i/g/{}/d/s'.format(guitar_id), str(min(velocity, 127)))
+    print("STRUM")
 
 
 def sample(verbose=False):
@@ -41,18 +41,20 @@ def sample(verbose=False):
     max_diff  = 0
     best_fret = 0
     for i, t in enumerate(fret_sensors):
-        cap_val = touch_thresh - t.read()
+        cap_val = t.read()
+        cap_diff = touch_thresh - cap_val
         if verbose:
             print(i, cap_val)
-        if cap_val >  max_diff:
-            max_diff = cap_val
+        if cap_diff >  max_diff:
+            max_diff = cap_diff
             best_fret = i + 1
     if best_fret != active_fret:
         update_fret(best_fret)
-    strum_val = touch_thresh - strum_sensor.read()
+    strum_val = strum_sensor.read()
+    strum_diff = strum_thresh - strum_val
     if verbose:
         print("Strum:", strum_val)
-    if strum_val > 0 and strumming is False:
-        strum(strum_val)
-    elif strumming is True and strum_val <= 0:
+    if strum_diff > 0 and strumming is False:
+        strum(strum_diff)
+    elif strumming is True and strum_diff <= 0:
         strumming = False
