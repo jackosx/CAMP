@@ -1,4 +1,5 @@
-
+# Module that operates like JS setInterval:
+# Repeatedly calls function at a set set interval
 
 from threading import Timer
 

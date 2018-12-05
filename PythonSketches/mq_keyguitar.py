@@ -1,5 +1,5 @@
 from pynput import keyboard
-import midi
+from langenizer import midi
 import paho.mqtt.client as mqtt
 
 client = mqtt.Client()

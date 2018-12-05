@@ -1,5 +1,5 @@
 from pynput import keyboard
-import midi
+from langenizer import midi
 
 guitar = midi.Guitar()
 keys_pressed = set()
