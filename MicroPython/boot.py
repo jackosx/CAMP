@@ -1,4 +1,5 @@
 import time
+import config
 
 def connect(timeout=30):
     import network
@@ -31,23 +32,20 @@ def connect(timeout=30):
         else:
             print("failed to connect, try again")
 
+# Call to supress verbose wifi output
 def no_debug():
     import esp
-    # you can run this from the REPL as well
     esp.osdebug(None)
 
-# no_debug()
+no_debug()
 connect()
 
+# Default sample. if this message prints then there is an error in
+# another module or the config is invalid
 def sample():
     print("No instrument type configured!")
 
-# def samp_guitar(calls, freq, v=False):
-#     for i in range(calls):
-#         guitar.sample(v)
-#         time.sleep_ms(freq)
-
-import config
+# replace sample function with that of the proper instrument module
 if config.instrument_type == 'guitar':
     import guitar
     sample = guitar.sample
@@ -55,11 +53,13 @@ if config.instrument_type == "drumpad":
     import drumpad
     sample = drumpad.sample
 
+# For dev in the REPL, manually sample and inspect sensor readings
 def do_n_samples(n):
     for i in range(n):
-        sample(config.dev)
+        sample(True)
         time.sleep_ms(config.sample_frequency)
 
+# If config does not specify dev mode, begin sample loop
 if not config.dev:
     while True:
         sample()

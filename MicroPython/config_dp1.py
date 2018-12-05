@@ -6,8 +6,6 @@ id = 0
 
 pad_pins = [4, 32, 15, 13]
 
-strum_pins = [12]
-
 threshold = 600
 
 # Milliseconds between readings

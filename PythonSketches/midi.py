@@ -4,7 +4,6 @@ import sys
 from collections import Counter
 
 # TODO Note class? With MIDI and note name?
-# TODO add flats as well
 base_notes = {
     'c'     : 0,
     "c#"    : 1,
@@ -122,6 +121,7 @@ class Instrument:
             self.midiout.open_virtual_port("My virtual output")
             print("Opened virtual port")
 
+    # Send Note-On MIDI Message
     def play_note(self, note_name=None, velocity=100, midi_id=None, duration=None):
         if note_name is not None and midi_id is None:
             midi_id = note_to_MIDI(note_name)
@@ -141,7 +141,7 @@ class Instrument:
             time.sleep(duration)
             self.stop_note(midi_id=midi_id)
 
-
+    # Send Note-Off MIDI Message
     def stop_note(self, note_name=None, midi_id=None):
         if note_name is not None and midi_id is None:
             midi_id = note_to_MIDI(note_name)
@@ -158,7 +158,7 @@ class Instrument:
         self.notes_on[midi_id] -= 1
         print("Stopped", note_name) # TODO make for verbose mode only
 
-
+    # Send Note-Off MIDI Message for all playing notes
     def stop_all(self):
         print("Halting instrument sounds")
         for n_id, count in self.notes_on.items():
