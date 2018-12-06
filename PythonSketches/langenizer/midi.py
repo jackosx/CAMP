@@ -180,13 +180,15 @@ class Guitar(Instrument):
         Instrument.__init__(self, channel)
 
     def set_key(self, key, octave):
-        self.key    = "C"
-        self.octave =  octave
+        self.key    = key
+        self.octave = octave
         self.chords = [Chords.get_five(key, octave=octave-1, use_names=True),
                        Chords.get_one(key, octave, True),
                        Chords.get_four(key, octave, True),
                        Chords.get_five(key, octave, True),
-                       Chords.get_one(key, octave+1, True)]
+                       Chords.get_one(key, octave+1, True),
+                       Chords.get_four(key, octave+1, True),
+                       Chords.get_five(key, octave+1, True)]                     
 
     def set_fret(self, fret_num):
         # if self.active_fret == fret_num:
@@ -200,10 +202,28 @@ class Guitar(Instrument):
             self.play_note(note_name=note, velocity=velocity)
 
 
+class Bass(Guitar):
+    def __init__(self, channel=0x1, key="C", octave=2):
+        Guitar.__init__(self, channel, key, octave)
+        self.set_key(key, octave)
+    
+    def set_key(self, key, octave):
+        self.key    = key
+        self.octave = octave
+        # e e g e d c b 
+        # 6 6 8 6 5 4 3
+        # 9 9 0 9 7 5 4
+        root = note_to_MIDI(note_name=key, octave=octave)
+        #             | 0  |   1   |   2   |   3   |   4   |   5   |
+        intervals = [0, 4, 5, 7, 9, 12]
+        self.chords = [(MIDI_to_note(root + i),) for i in intervals]    
+
 
 class Drum(Instrument):
     def __init__(self, channel=10):
         Instrument.__init__(self, channel)
+        self.drums = ['f2', 'd2', 'a#2']
 
     def strike(self, drum_num, velocity):
-        self.play_note(midi_id=60+drum_num, velocity=velocity)
+        self.play_note(note_name=self.drums[drum_num], velocity=velocity)
+        self.stop_note(note_name=self.drums[drum_num])
