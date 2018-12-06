@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script src="./node_modules/mqtt/browserMqtt.js"></script>
+    <script>
+      var client = mqtt.connect("mqtt://manatee.local:1883"); // you add a ws:// url here
+      client.subscribe("mqtt/demo");
+
+      client.on("message", function(topic, payload) {
+        alert([topic, payload].join(": "));
+        client.end();
+      });
+
+      client.publish("mqtt/demo", "hello world!");
+    </script>
+    <title>CAMP</title>
+  </head>
+
+  <body>
+    <h1>GENRE INTERFACE</h1>
+  </body>
+</html>
