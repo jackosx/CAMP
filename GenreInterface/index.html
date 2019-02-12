@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/css/bootstrap.min.css"
+      integrity="sha384-PDle/QlgIONtM1aqA2Qemk5gPOE7wFq8+Em+G/hmo5Iq0CCmYZLv3fVRDJ4MMwEA"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/js/bootstrap.min.js"
+      integrity="sha384-7aThvCh9TypR7fIc2HV4O/nFMVCBwyIUKL8XCtKE+8xgCgl/PQGuFsvShjr74PBp"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://unpkg.com/mqtt@2.18.8/dist/mqtt.min.js"></script>
+    <script src="./script.js"></script>
+    <title>CAMP</title>
+  </head>
+
+  <body>
+    <div class="col-md-3">
+      <h1>Select a genre:</h1>
+      <select
+        class="custom-select custom-select-sm"
+        id="genreSelect"
+        onchange="setGenre()"
+      >
+        <option>Rock and Roll</option>
+        <option>Pop</option>
+        <option>Jazz</option>
+        <option>Country</option>
+      </select>
+    </div>
+  </body>
+</html>
