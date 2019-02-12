@@ -12,7 +12,7 @@ import metronome
 
 m = metronome.ticker.start()
 
-guitars = [midi.Guitar(octave=3), midi.Bass()]
+guitars = [midi.Guitar(key="G", octave=3), midi.Bass(key='G',octave=1)]
 drums = midi.Drum()
 
 def on_guitar_message(client, userdata, msg):

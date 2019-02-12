@@ -1,3 +1,14 @@
+"""
+Handles MIDI operations such as transforming human-readable
+music notes to MIDI data, then piping it to virtual MIDI ports
+to be played by a DAW such as GarageBand (not a full DAW with
+support for multiple simultaneous MIDI inputs) or Ableton Live
+(a much better choice, but not free)
+
+Contains Instrument base class, which is extended to
+Drum, Guitar, and Bass classes (Bass extends guitar)
+"""
+
 import time
 import rtmidi
 import sys
@@ -188,7 +199,7 @@ class Guitar(Instrument):
                        Chords.get_five(key, octave, True),
                        Chords.get_one(key, octave+1, True),
                        Chords.get_four(key, octave+1, True),
-                       Chords.get_five(key, octave+1, True)]                     
+                       Chords.get_five(key, octave+1, True)]
 
     def set_fret(self, fret_num):
         # if self.active_fret == fret_num:
@@ -206,21 +217,21 @@ class Bass(Guitar):
     def __init__(self, channel=0x1, key="C", octave=2):
         Guitar.__init__(self, channel, key, octave)
         self.set_key(key, octave)
-    
+
     def set_key(self, key, octave):
         self.key    = key
         self.octave = octave
-        # e e g e d c b 
+        # e e g e d c b
         # 6 6 8 6 5 4 3
         # 9 9 0 9 7 5 4
         root = note_to_MIDI(note_name=key, octave=octave)
         #             | 0  |   1   |   2   |   3   |   4   |   5   |
         intervals = [0, 4, 5, 7, 9, 12]
-        self.chords = [(MIDI_to_note(root + i),) for i in intervals]    
+        self.chords = [(MIDI_to_note(root + i),) for i in intervals]
 
 
 class Drum(Instrument):
-    def __init__(self, channel=10):
+    def __init__(self, channel=9):
         Instrument.__init__(self, channel)
         self.drums = ['f2', 'd2', 'a#2']
 

@@ -4,16 +4,20 @@ instrument_type = 'guitar'
 
 id = 0
 
-fret_pins = [4, 32, 15, 13]
+fret_pins = [12, 14, 27, 33, 32]
 
-strum_pins = [12]
+strum_pins = [15]
 
-threshold = 200
+threshold = 150
 
 strum_threshold = 350
 
+stdev_trigger = 4
+
+velocity_scale = 3
+
 # Milliseconds between readings
-sample_frequency = 15
+sample_frequency = 200
 
 # Development mode. False means start read loop at boot
-dev = False
+dev = True

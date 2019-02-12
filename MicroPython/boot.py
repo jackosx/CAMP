@@ -56,23 +56,29 @@ connect()
 # another module or the config is invalid
 def sample():
     print("No instrument type configured!")
+def calibrate():
+    print("No instrument type configured!")
 
 # replace sample function with that of the proper instrument module
 if config.instrument_type == 'guitar':
     import guitar
-    sample = guitar.sample
+    sample    = guitar.sample
+    calibrate = guitar.calibrate
 if config.instrument_type == "drumpad":
     import drumpad
-    sample = drumpad.sample
+    sample    = drumpad.sample
+    calibrate = drumpad.calibrate
+    
+calibrate()
 
 # For dev in the REPL, manually sample and inspect sensor readings
 def do_n_samples(n):
     for i in range(n):
         sample(True)
         time.sleep_ms(config.sample_frequency)
+        
 
-# If config does not specify dev mode, begin sample loop
-if not config.dev:
-    while True:
-        sample()
-        time.sleep_ms(config.sample_frequency)
+while True:
+    sample(config.dev)
+    time.sleep_ms(config.sample_frequency)
+        

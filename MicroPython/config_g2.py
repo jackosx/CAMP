@@ -12,8 +12,14 @@ threshold = 150
 
 strum_threshold = 350
 
+stdev_trigger = 3
+
+stdev_trigger_strum = 3
+
+velocity_scale = 3
+
 # Milliseconds between readings
-sample_frequency = 10
+sample_frequency = 20
 
 # Development mode. False means start read loop at boot
-dev = False
+dev = True
