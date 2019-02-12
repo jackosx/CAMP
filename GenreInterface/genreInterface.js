@@ -14,7 +14,7 @@ app.listen(PORT, () => {
 var client = mqtt.connect("mqtt://manatee.local:1883");
 
 client.on("connect", function() {
-  client.subscribe("test", function(err) {
+  client.subscribe("g/{r,w}", function(err) {
     if (!err) {
       client.publish("test", "Hello mqtt");
     }
@@ -23,11 +23,14 @@ client.on("connect", function() {
 
 client.on("message", function(topic, message) {
   // message is Buffer
+  console.log(topic);
   console.log(message.toString());
   //client.end();
 });
 
 app.post("/genre", function(req, res) {
-  client.publish("test", "Post route");
+  const body = req.body;
+  const genre = body.genre;
+  client.publish("g/{r,w}", genre.toString());
   res.json("Message sent");
 });
