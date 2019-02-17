@@ -43,7 +43,7 @@ def set_touch_thresh(new_thresh):
 def strike(new_pad, velocity):
     print("STRIKE",  new_pad, velocity)
     pads_touched[new_pad] = True
-    client.publish('i/d/{}/d/s/{}'.format(drumpad_id, new_pad), str(new_pad))
+    client.publish('i/d/{}/d/s/{}'.format(drumpad_id, new_pad), str(min(velocity, 127)))
 
 # Read sesnors and update pads touched. Meant to be called frequently 
 def sample(verbose=False):

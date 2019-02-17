@@ -12,7 +12,7 @@ import metronome
 
 m = metronome.ticker.start()
 
-guitars = [midi.Guitar(octave=3)]
+guitars = [midi.Guitar(key="G", octave=3), midi.Bass(key='G',octave=1)]
 drums = midi.Drum()
 
 def on_guitar_message(client, userdata, msg):
@@ -32,12 +32,12 @@ def on_guitar_message(client, userdata, msg):
             guitar.set_fret(sensor_val)
 
 def on_drum_message(client, userdata, msg):
-    print("Drum Message", msg.topic, msg.payload)
     # i/ d/id/ d/ s/ n
     # 0| 2| 4| 6| 8|10
     drumkit_num = int(msg.topic[4])
     sensor_val = int(msg.payload)
     action     = msg.topic[6]
+    print("Drum Message", msg.topic, sensor_val)
     if action == 'd': # d for 'data'
         user_action = msg.topic[8]
         print(user_action)
