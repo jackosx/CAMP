@@ -68,7 +68,11 @@ if config.instrument_type == "drumpad":
     import drumpad
     sample    = drumpad.sample
     calibrate = drumpad.calibrate
-    
+if config.instrument_type == 'drumstick':
+    import drumstick
+    sample    = drumstick.sample
+    # calibrate = drumstick.calibrate
+
 calibrate()
 
 # For dev in the REPL, manually sample and inspect sensor readings
@@ -76,9 +80,8 @@ def do_n_samples(n):
     for i in range(n):
         sample(True)
         time.sleep_ms(config.sample_frequency)
-        
+
 
 while True:
     sample(config.dev)
     time.sleep_ms(config.sample_frequency)
-        

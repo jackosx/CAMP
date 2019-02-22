@@ -2,8 +2,6 @@
 Takes messages from ESP32 instruments and generates MIDI. Can use
 metronome class to quantize playing rhythm.
 
-Only supports single guitar right now.
-
 """
 
 import paho.mqtt.client as mqtt
