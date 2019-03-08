@@ -42,7 +42,7 @@ class Accelerometer:
 
 
 
-    def __init__(self, scl=22, sda=21):
+    def __init__(self, scl=21, sda=22):
         self.six_byte_buffer = bytearray(6)
         self.one_byte_buffer = bytearray(1)
         self.i2c = machine.I2C(scl=machine.Pin(scl), sda=machine.Pin(sda))
@@ -51,7 +51,7 @@ class Accelerometer:
         self.write_u8(Accelerometer._MMA8451_REG_CTRL_REG2, 0x40)
         while ((self.read_u8(Accelerometer._MMA8451_REG_CTRL_REG2) & 0x40) > 0):
             print("\t WAITING")
-        print("Enable 4g mode")
+        print("Enable 8g mode")
         self.write_u8(Accelerometer._MMA8451_REG_XYZ_DATA_CFG, Accelerometer.RANGE_8G)
         print("High res mode")
         self.write_u8(Accelerometer._MMA8451_REG_CTRL_REG2, 0x02)
