@@ -12,7 +12,24 @@ import metronome
 
 m = metronome.ticker.start()
 
-guitars = [midi.Guitar(key="G", octave=3), midi.Bass(key='G', octave=1)]
+
+genres = [
+    {
+        "name": "Rock",
+        "channel": 0
+    },
+    {
+        "name": "Jazz",
+        "channel": 1
+    },
+    {
+        "name": "Country",
+        "channel": 2
+    }
+]
+
+guitars = [midi.Guitar(channel=genres[0]["channel"], key="G",
+                       octave=3, ), midi.Bass(key='G', octave=1)]
 drums = midi.Drum()
 
 
@@ -55,7 +72,13 @@ def on_drum_message(channel, payload):
             drums.strike(drum_num, sensor_val)
 
 
-# The callback for when the client receives a CONNACK response from the server.
+def on_genre_message_mqtt(client, userdata, msg):
+    print("Genre message", msg.topic, msg.payload)
+    guitars[0].set_midi_channel(int(msg.payload))
+
+    # The callback for when the client receives a CONNACK response from the server.
+
+
 def on_connect_mqtt(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
@@ -63,9 +86,11 @@ def on_connect_mqtt(client, userdata, flags, rc):
     # Topic format
     # i/{g,d}/{inst_num}/{d,c}/[xtra]
     client.subscribe("i/+/+/#")
+    client.subscribe("g/{r,w}")
     client.message_callback_add(
         "i/g/+/#", on_guitar_message_mqtt)  # for guitar messages
     client.message_callback_add("i/d/+/#", on_drum_message_mqtt)
+    client.message_callback_add("g/{r,w}", on_genre_message_mqtt)
 
 
 # The callback for when a PUBLISH message is received from the server.
@@ -79,14 +104,14 @@ client.on_message = on_message_mqtt
 
 client.connect("manatee.local", 1883, 60)
 
-dispatcher = dispatcher.Dispatcher()
+"""dispatcher = dispatcher.Dispatcher()
 dispatcher.map("/*", print)
 dispatcher.map("/i/g/*", on_guitar_message)
 dispatcher.map("/i/d/*", on_drum_message)
 server = osc_server.ThreadingOSCUDPServer(
     ("dan.local", 5005), dispatcher)
 print("Serving on {}".format(server.server_address))
-server.serve_forever()
+server.serve_forever()"""
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
