@@ -119,7 +119,7 @@ class Chords:
 
 class Instrument:
 
-    def __init__(self, midi_channel=0):
+    def __init__(self, midi_channel=0, midi_name="Python"):
         self.midi_channel = midi_channel
         self.midiout = rtmidi.MidiOut()
         self.duration = .25
@@ -129,8 +129,8 @@ class Instrument:
             self.midiout.open_port(0)
             print("Selected first available port")
         else:
-            self.midiout.open_virtual_port("My virtual output")
-            print("Opened virtual port")
+            self.midiout.open_virtual_port(midi_name)
+            print("Opened", midi_name, "virtual port")
 
     # Send Note-On MIDI Message
     def play_note(self, note_name=None, velocity=100, midi_id=None, duration=None):
@@ -185,10 +185,10 @@ class Instrument:
     # del midiout
 
 class Guitar(Instrument):
-    def __init__(self, channel=0x0, key="C", octave=3):
+    def __init__(self, channel=0x0, key="C", octave=3, midi_name="Guitar"):
         self.active_fret = 0
         self.set_key(key, octave)
-        Instrument.__init__(self, channel)
+        Instrument.__init__(self, channel, midi_name=midi_name)
 
     def set_key(self, key, octave):
         self.key    = key
@@ -214,8 +214,8 @@ class Guitar(Instrument):
 
 
 class Bass(Guitar):
-    def __init__(self, channel=0x1, key="C", octave=2):
-        Guitar.__init__(self, channel, key, octave)
+    def __init__(self, channel=0x1, key="C", octave=2, midi_name="Bass"):
+        Guitar.__init__(self, channel, key, octave, midi_name)
         self.set_key(key, octave)
 
     def set_key(self, key, octave):
@@ -231,8 +231,8 @@ class Bass(Guitar):
 
 
 class Drum(Instrument):
-    def __init__(self, channel=9):
-        Instrument.__init__(self, channel)
+    def __init__(self, channel=9, midi_name="Drums"):
+        Instrument.__init__(self, channel, midi_name=midi_name)
         self.drums = ['f2', 'd2', 'a#2']
 
     def strike(self, drum_num, velocity):
