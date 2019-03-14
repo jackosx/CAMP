@@ -4,13 +4,15 @@ import mannet
 
 # Connect to camp-manatee
 mannet.connect_wifi()
+time.sleep(5)
+mannet.connect_client()
 
 # Default sample. if this message prints then there is an error in
 # another module or the config is invalid
 def sample():
-    print("No instrument type configured!")
+    print("No instrument sample configured!")
 def calibrate():
-    print("No instrument type configured!")
+    print("No instrument calibrate configured!")
 
 # replace sample function with that of the proper instrument module
 if config.instrument_type == 'guitar':
@@ -25,8 +27,6 @@ if config.instrument_type == 'drumstick':
     import drumstick
     sample    = drumstick.sample
     # calibrate = drumstick.calibrate
-
-calibrate()
 
 # For dev in the REPL, manually sample and inspect sensor readings
 def do_n_samples(n):
