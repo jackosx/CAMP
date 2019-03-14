@@ -59,8 +59,8 @@ def on_connect_mqtt(client, userdata, flags, rc):
     # Topic format
     # i/{g,d}/{inst_num}/{d,c}/[xtra]
     client.subscribe("i/+/+/#")
-    client.message_callback_add("i/g/+/#", on_guitar_message) # for guitar messages
-    client.message_callback_add("i/d/+/#", on_drum_message)
+    client.message_callback_add("i/g/+/#", on_guitar_message_mqtt) # for guitar messages
+    client.message_callback_add("i/d/+/#", on_drum_message_mqtt)
 
 
 
@@ -77,7 +77,7 @@ client.connect("manatee.local", 1883, 60)
 
 dispatcher = dispatcher.Dispatcher()
 dispatcher.map("/*", print)
-dispatcher.map("/i/g/+/*", on_guitar_message)
+dispatcher.map("/i/g/*", on_guitar_message)
 dispatcher.map("/i/d/*", on_drum_message)
 server = osc_server.ThreadingOSCUDPServer(
   ("jack.local", 5005), dispatcher)
