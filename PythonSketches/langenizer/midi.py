@@ -16,33 +16,36 @@ from collections import Counter
 
 # TODO Note class? With MIDI and note name?
 base_notes = {
-    'c'     : 0,
-    "c#"    : 1,
-    "db"    : 1,
-    "c#/db" : 1,
-    "d"     : 2,
-    "d#"    : 3,
-    "eb"    : 3,
-    "d#/eb" : 3,
-    "e"     : 4,
-    "f"     : 5,
-    "f#"    : 6,
-    "gb"    : 6,
-    "f#/gb" : 7,
-    "g"     : 7,
-    "g#"    : 8,
-    "ab"    : 9,
-    "g#/ab" : 9,
-    "a"     : 9,
-    "a#"    : 10,
-    "bb"    : 10,
-    "a#/b#" : 10,
-    "b"     : 11
+    'c': 0,
+    "c#": 1,
+    "db": 1,
+    "c#/db": 1,
+    "d": 2,
+    "d#": 3,
+    "eb": 3,
+    "d#/eb": 3,
+    "e": 4,
+    "f": 5,
+    "f#": 6,
+    "gb": 6,
+    "f#/gb": 7,
+    "g": 7,
+    "g#": 8,
+    "ab": 9,
+    "g#/ab": 9,
+    "a": 9,
+    "a#": 10,
+    "bb": 10,
+    "a#/b#": 10,
+    "b": 11
 }
 
-note_list_sharps = ['C', "C#", 'D', "D#", 'E', 'F', "F#", 'G', "G#", 'A', "A#", 'B']
-note_list_flats = ['C', "Db", 'D', "Eb", 'E', 'F', "Gb", 'G', "Ab", 'A', "Bb", 'B']
-note_list = [s if s == f else s + '/' + f for s,f in zip(note_list_sharps, note_list_flats)]
+note_list_sharps = ['C', "C#", 'D', "D#",
+                    'E', 'F', "F#", 'G', "G#", 'A', "A#", 'B']
+note_list_flats = ['C', "Db", 'D', "Eb", 'E',
+                   'F', "Gb", 'G', "Ab", 'A', "Bb", 'B']
+note_list = [s if s == f else s + '/' + f for s,
+             f in zip(note_list_sharps, note_list_flats)]
 
 # TODO handle note mapping failures
 
@@ -50,6 +53,8 @@ note_list = [s if s == f else s + '/' + f for s,f in zip(note_list_sharps, note_
 # i.e. 'C4' ->  60 or 'D#' -> 63
 # note_name: str that may or may not include octave
 # octave: optionally specify octave (-1 to 7) with int
+
+
 def note_to_MIDI(note_name, octave=None):
     if note_name is None:
         raise ValueError("No note provided!")
@@ -70,7 +75,8 @@ def note_to_MIDI(note_name, octave=None):
 # Default behavior includes both flat and sharp name
 def MIDI_to_note(midi_id, sharps_only=False, flats_only=False):
     if midi_id > 127 or midi_id < 0:
-        raise ValueError("Invalid MIDI note. Expecting integer in range 0-127. Got", midi_id)
+        raise ValueError(
+            "Invalid MIDI note. Expecting integer in range 0-127. Got", midi_id)
     octave = (midi_id // 12) - 1
     note_i = midi_id % 12
     if sharps_only:
@@ -81,6 +87,8 @@ def MIDI_to_note(midi_id, sharps_only=False, flats_only=False):
         return note_list[note_i] + str(octave)
 
 # TODO make these more parameterized
+
+
 class Chords:
 
     def get_one(root, octave=None, use_names=False):
@@ -116,14 +124,13 @@ class Chords:
             return note_ids
 
 
-
 class Instrument:
 
     def __init__(self, midi_channel=0, midi_name="Python"):
         self.midi_channel = midi_channel
         self.midiout = rtmidi.MidiOut()
         self.duration = .25
-        self.notes_on = Counter() # need to count how many times we turn on each note
+        self.notes_on = Counter()  # need to count how many times we turn on each note
         available_ports = self.midiout.get_ports()
         if available_ports:
             self.midiout.open_port(0)
@@ -141,12 +148,14 @@ class Instrument:
         elif note_name is None and midi_id is None:
             raise ValueError("No note to play provided!")
         elif note_to_MIDI(note_name) != midi_id:
-            raise ValueError("Provided note {} does not match provided MIDI id {}".format(note_name, midi_id))
+            raise ValueError("Provided note {} does not match provided MIDI id {}".format(
+                note_name, midi_id))
 
-        note_on = [0x90+self.midi_channel, midi_id, velocity] # channel 1, middle C, velocity 112
+        # channel 1, middle C, velocity 112
+        note_on = [0x90+self.midi_channel, midi_id, velocity]
         self.midiout.send_message(note_on)
         self.notes_on[midi_id] += 1
-        print("Playing",note_name) # TODO make for verbose mode only
+        print("Playing", note_name)  # TODO make for verbose mode only
 
         if duration is not None:
             time.sleep(duration)
@@ -161,13 +170,15 @@ class Instrument:
         elif note_name is None and midi_id is None:
             raise ValueError("No note provided!")
         elif note_to_MIDI(note_name) != midi_id:
-            raise ValueError("Provided note {} does not match provided MIDI id {}".format(note_name, midi_id))
+            raise ValueError("Provided note {} does not match provided MIDI id {}".format(
+                note_name, midi_id))
 
         # TODO: Check if note is playing before sending?
-        note_off = [0x80+self.midi_channel, midi_id, 0] # channel 1, middle C, velocity 112
+        # channel 1, middle C, velocity 112
+        note_off = [0x80+self.midi_channel, midi_id, 0]
         self.midiout.send_message(note_off)
         self.notes_on[midi_id] -= 1
-        print("Stopped", note_name) # TODO make for verbose mode only
+        print("Stopped", note_name)  # TODO make for verbose mode only
 
     # Send Note-Off MIDI Message for all playing notes
     def stop_all(self):
@@ -180,9 +191,12 @@ class Instrument:
         # self.midiout.send_message([self.midi_channel, 120])
         # self.midiout.send_message([0xB0+self.midi_channel, 123, 0])
 
-
-
     # del midiout
+
+    # Set midi channel
+    def set_midi_channel(self, channel):
+        self.midi_channel = channel
+
 
 class Guitar(Instrument):
     def __init__(self, channel=0x0, key="C", octave=3, midi_name="Guitar"):
@@ -191,7 +205,7 @@ class Guitar(Instrument):
         Instrument.__init__(self, channel, midi_name=midi_name)
 
     def set_key(self, key, octave):
-        self.key    = key
+        self.key = key
         self.octave = octave
         self.chords = [Chords.get_five(key, octave=octave-1, use_names=True),
                        Chords.get_one(key, octave, True),
@@ -204,7 +218,7 @@ class Guitar(Instrument):
     def set_fret(self, fret_num):
         # if self.active_fret == fret_num:
         #     return
-        self.stop_all() # STOP Playing on fret change
+        self.stop_all()  # STOP Playing on fret change
         self.active_fret = fret_num
 
     # Need strum worker thread
@@ -219,7 +233,7 @@ class Bass(Guitar):
         self.set_key(key, octave)
 
     def set_key(self, key, octave):
-        self.key    = key
+        self.key = key
         self.octave = octave
         # e e g e d c b
         # 6 6 8 6 5 4 3
