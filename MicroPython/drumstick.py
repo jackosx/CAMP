@@ -19,6 +19,7 @@
 
 
 import machine
+# from umqtt.simple import MQTTClient
 from accelerometer import Accelerometer
 import config
 import array
