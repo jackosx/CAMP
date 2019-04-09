@@ -33,11 +33,11 @@ class CapSensor:
 
     _SENSITIVITY = (128, 64, 32, 16, 8, 4, 2, 1)
 
-    def __init__(self, scl=21, sda=22):
+    def __init__(self, i2c, addr):
         self.six_byte_buffer = bytearray(6)
         self.one_byte_buffer = bytearray(1)
-        self.i2c = machine.I2C(scl=machine.Pin(scl), sda=machine.Pin(sda))
-        self.address = 41#self.i2c.scan()[0]
+        self.i2c = i2c
+        self.address = addr
         print("Reset and wait for chip to be ready.")
         mid = self._read_register(_CAP1188_MANU_ID)
         if mid != _CAP1188_MID:
