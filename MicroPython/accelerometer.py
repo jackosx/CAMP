@@ -75,7 +75,7 @@ class Accelerometer:
 
     def get_accel(self):
         self.i2c.readfrom_mem_into(self.address, Accelerometer._MMA8451_REG_OUT_X_MSB, self.six_byte_buffer)
-        x, y, z = struct.unpack('>hhh', self.six_byte_buffer)
+        x, y, z = struct.unpack('<hhh', self.six_byte_buffer)
         x >>= 2
         y >>= 2
         z >>= 2

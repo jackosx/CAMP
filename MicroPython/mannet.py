@@ -1,6 +1,5 @@
 import network
 import leds
-from umqtt.simple import MQTTClient
 from uosc.client import Bundle, Client, create_message
 import config
 
@@ -20,10 +19,15 @@ def is_connected():
 # Default behavior is connect to OSC, specify mqtt client name for MQTT
 def connect_client(host="jack", port=5005, mqtt_client_name=None):
     global mqtt, osc
-    ip = mdns.queryHost(host)
+    print("Querying mDNS", host)
+    ip = mdns.queryHost(host, timeout=30000)
+    print("Query result:", ip)
+    if len(ip) == 0 or 'not found' in ip:
+        print("ABORT: Could not resolve host!")
+        return False
     if mqtt_client_name is not None:
-        mqtt = MQTTClient(mqtt_client_name, ip)
-        mqtt.connect()
+        mqtt = network.mqtt(mqtt_client_name, "mqtt://" + ip)
+        mqtt.start()
     else: # use OSC
         osc = Client(ip, port)
 

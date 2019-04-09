@@ -19,16 +19,13 @@
 
 
 import machine
-from umqtt.simple import MQTTClient
 from accelerometer import Accelerometer
 import config
 import array
 from rollingaverage import RollingStats
+import mannet
 
 drumstick_id = config.id
-
-# client = MQTTClient("drumstick-{}".format(config.id), "manatee.local")
-# client.connect()
 
 # See wiki for pinout: https://github.com/jackosx/CAMP/wiki/ESP32-Hardware
 
@@ -90,34 +87,35 @@ def strike(stick=0, unscaled=0):
     print("STRIKE {:5.0f} VEL: {:5.0f}".format(unscaled, velocity))
     print("AVG{:5.0f}".format(strike_avg.avg))
     buzz.value(1) # Start haptic (sometimes it doesn't)
-
-    # client.publish('i/d/{}/d/s/{}'.format(drumpad_id, 0), str(min(velocity, 127)))
+    mannet.send_message('/i/d/{}/d/s/{}'.format(drumstick_id, 0), str(min(velocity, 127)))
 
 # Read sesnors and update pads touched. Meant to be called frequently
 def sample(verbose=False):
-    global striking
-    global prev_x, prev_y, prev_z
-    global prev_dx, prev_dy, prev_dz
+    try:
+        global striking
+        global prev_x, prev_y, prev_z
+        global prev_dx, prev_dy, prev_dz
 
-    x, y, z = stick.get_accel() # Positive y is moving down
-    dx, dy, dz = (x - prev_x), (y - prev_y), (z - prev_z) # Negative dy is bottom of swing?
-    ddx, ddy, ddz = (dx - prev_dx), (dy - prev_dy), (dz - prev_dz)
-    # val = (dx*dx + dy*dy + dz*dz) ** config.power
-    # val = (dy*dy) ** config.power
+        x, y, z = stick.get_accel() # Positive y is moving down
+        dx, dy, dz = (x - prev_x), (y - prev_y), (z - prev_z) # Negative dy is bottom of swing?
+        ddx, ddy, ddz = (dx - prev_dx), (dy - prev_dy), (dz - prev_dz)
+        # val = (dx*dx + dy*dy + dz*dz) ** config.power
+        # val = (dy*dy) ** config.power
 
-    val = (y*y) ** config.power
-    if config.use_jerk is True:
-        val = (dy*dy) ** config.power
+        val = (y*y) ** config.power
+        if config.use_jerk is True:
+            val = (dy*dy) ** config.power
 
-    # print("================================{:5.0f}".format(val))
-    if val > config.print_threshold:
-        print("{:5.2f}  |  {:4.4f}, {:4.4f}, {:4.4f}".format(val, ddy, dy, y))
-    if val > config.threshold and dy < 0 and not striking and debounce_count == 0:
-        print("{:5.2f}  |  {:4.4f}, {:4.4f}, {:4.4f}".format(val, ddy, dy, y))
-        print("================================", y)
-        strike(0, y)
-    elif val <= config.threshold and striking:
-        striking = False
-    prev_x, prev_y, prev_z = x, y, z
-    prev_dx, prev_dy, prev_dz = dx, dy, dz
-    decrement_counters()
+        if val > config.print_threshold:
+            print("{:5.2f}  |  {:4.4f}, {:4.4f}, {:4.4f}".format(val, ddy, dy, y))
+        if val > config.threshold and dy < 0 and not striking and debounce_count == 0:
+            print("{:5.2f}  |  {:4.4f}, {:4.4f}, {:4.4f}".format(val, ddy, dy, y))
+            print("================================", y)
+            strike(0, y)
+        elif val <= config.threshold and striking:
+            striking = False
+        prev_x, prev_y, prev_z = x, y, z
+        prev_dx, prev_dy, prev_dz = dx, dy, dz
+        decrement_counters()
+    except OSError as er:
+        print(1, repr(er))
