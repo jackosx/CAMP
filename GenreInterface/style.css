@@ -1,9 +1,9 @@
 html {
   background: url('guitars.jpg') no-repeat center center fixed;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }
 body {
   display: flex;
@@ -17,7 +17,7 @@ h1 {
   color: white;
   font-size: 250px;
   line-height: 150px;
-  letter-spacing:-5px;
+  letter-spacing: -5px;
   margin: 0;
   margin-top: 40px;
   z-index: 3;
@@ -26,9 +26,9 @@ h1 {
   z-index: -1;
   position: relative;
   top: -20px;
-  background-color: #3A00FB;
+  background-color: #3a00fb;
   padding: 130px 60px 40px 60px;
-  width: 740px;
+  width: 650px;
 }
 h2 {
   font-family: 'Playfair Display', serif;
@@ -48,5 +48,5 @@ p {
   margin: 0;
 }
 p:hover {
-  color: #3A00FB !important;
+  color: #3a00fb !important;
 }
