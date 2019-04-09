@@ -28,6 +28,7 @@ import mannet
 import config
 import touchpad
 import time
+import capsensor
 
 guitar_id = config.id
 stdev_trigger = config.stdev_trigger
@@ -36,8 +37,9 @@ stdev_trigger = config.stdev_trigger
 # For skinnier board see printout it shipped with
 # fret_sensors = [touchpad.TouchPad(p, stdev_trigger) for p in config.fret_pins]
 # strum_sensor = touchpad.TouchPad(config.strum_pins[0], stdev_trigger) # eventually more pins will be used for strumming
-fret = capsensor.CapSensor(scl=21, sda=22)
-strm = capsensor.CapSensor(scl=16, sda=17)
+i2c = machine.I2C(scl=config.scl, sda=config.sda)
+fret = capsensor.CapSensor(i2c=i2c, addr=config.fret_addr)
+strm = capsensor.CapSensor(i2c=i2c, addr=config.strum_addr)
 
 # touch_thresh = config.threshold
 # strum_thresh = config.strum_threshold
@@ -64,15 +66,16 @@ def update_fret(new_fret):
     print("NEW FRET",  new_fret)
     global active_fret
     active_fret = new_fret
-    mannet.send_message('i/g/{}/d/f'.format(guitar_id), str(active_fret))
+    mannet.send_message('/i/g/{}/d/f'.format(guitar_id), str(active_fret))
 
 # Called when strum detected, sends MQTT message
 def strum(velocity):
     global strumming
     strumming = True
     v = min(int(round(velocity*config.velocity_scale)), 127)
-    v = max(int(0, v))
-    mannet.send_message('i/g/{}/d/s'.format(guitar_id), str(v))
+    v = max(0, v)
+    #hard coding velocity for now
+    mannet.send_message('/i/g/{}/d/s'.format(guitar_id), str(100))
     print("STRUM", v)
 
 # Read sensors, update fret touched and loof for strum.
@@ -81,16 +84,16 @@ def sample(verbose=False):
     global strumming
     fret_tuple = fret.touched_pins()
     strm_tuple = strm.touched_pins()
-
+    strum_pin_index = config.strum_pin - 1
     for j in range(8):
         if (fret_tuple[j]):
             if (j != active_fret):
                 update_fret(j)
             break
-
-    if (strm_tuple[config.strum_pin] and strumming is False):
+  
+    if (strm_tuple[strum_pin_index] and strumming is False):
         strum(strm.delta_count(config.strum_pin))
-    elif strumming is True:
+    elif strumming is True and not strm_tuple[strum_pin_index]:
         strumming = False
 
 
