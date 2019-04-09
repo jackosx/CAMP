@@ -34,26 +34,30 @@ stdev_trigger = config.stdev_trigger
 
 # See wiki for pinout: https://github.com/jackosx/CAMP/wiki/ESP32-Hardware
 # For skinnier board see printout it shipped with
-fret_sensors = [touchpad.TouchPad(p, stdev_trigger) for p in config.fret_pins]
-strum_sensor = touchpad.TouchPad(config.strum_pins[0], stdev_trigger) # eventually more pins will be used for strumming
+# fret_sensors = [touchpad.TouchPad(p, stdev_trigger) for p in config.fret_pins]
+# strum_sensor = touchpad.TouchPad(config.strum_pins[0], stdev_trigger) # eventually more pins will be used for strumming
+fret = capsensor.CapSensor(scl=21, sda=22)
+strm = capsensor.CapSensor(scl=16, sda=17)
 
-touch_thresh = config.threshold
-strum_thresh = config.strum_threshold
+# touch_thresh = config.threshold
+# strum_thresh = config.strum_threshold
 
 active_fret = 0
 strumming = False
 
 def calibrate():
-    for i in range(400):
-        time.sleep_ms(config.sample_frequency)
-        strum_sensor.calibrate_step()
-        for s in fret_sensors:
-            s.calibrate_step()
+    fret.recalibrate()
+    strm.recalibrate()
+    # for i in range(400):
+    #     time.sleep_ms(config.sample_frequency)
+    #     strum_sensor.calibrate_step()
+    #     for s in fret_sensors:
+    #         s.calibrate_step()
 
 
-def set_touch_thresh(new_thresh):
-    global touch_thresh
-    touch_thresh = new_thresh
+# def set_touch_thresh(new_thresh):
+#     global touch_thresh
+#     touch_thresh = new_thresh
 
 # Called when the active fret changes, sends MQTT message
 def update_fret(new_fret):
@@ -67,6 +71,7 @@ def strum(velocity):
     global strumming
     strumming = True
     v = min(int(round(velocity*config.velocity_scale)), 127)
+    v = max(int(0, v))
     mannet.send_message('i/g/{}/d/s'.format(guitar_id), str(v))
     print("STRUM", v)
 
@@ -74,23 +79,36 @@ def strum(velocity):
 # To be called frequently.
 def sample(verbose=False):
     global strumming
-    max_zstat  = 0
-    best_fret = 0 # Default to no fret touched
-    for i, t in enumerate(fret_sensors):
-        zstat = t.read()
-        abov_thresh = zstat - stdev_trigger
-        if verbose:
-            print(i, zstat)
-        if zstat >  stdev_trigger:
-            max_zstat = zstat
-            best_fret = i + 1
-    if best_fret != active_fret:
-        update_fret(best_fret)
-    strum_zstat = strum_sensor.read()
-    strum_diff = stdev_trigger - strum_zstat
-    if verbose:
-        print("Strum:", strum_zstat)
-    if strum_zstat > stdev_trigger and strumming is False:
-        strum(strum_zstat)
-    elif strumming is True and strum_zstat <= stdev_trigger:
+    fret_tuple = fret.touched_pins()
+    strm_tuple = strm.touched_pins()
+
+    for j in range(8):
+        if (fret_tuple[j]):
+            if (j != active_fret):
+                update_fret(j)
+            break
+
+    if (strm_tuple[config.strum_pin] and strumming is False):
+        strum(strm.delta_count(config.strum_pin))
+    elif strumming is True:
         strumming = False
+
+
+    # max_zstat  = 0
+    # best_fret = 0 # Default to no fret touched
+    # for i, t in enumerate(fret_sensors):
+    #     zstat = t.read()
+    #     abov_thresh = zstat - stdev_trigger
+    #     if verbose:
+    #         print(i, zstat)
+    #     if zstat >  stdev_trigger:
+    #         max_zstat = zstat
+    #         best_fret = i + 1
+    # if best_fret != active_fret:
+    #     update_fret(best_fret)
+    # if verbose:
+    #     print("Strum:", strum_zstat)
+    # if strum_zstat > stdev_trigger and strumming is False:
+    #     strum(strum_zstat)
+    # elif strumming is True and strum_zstat <= stdev_trigger:
+    #     strumming = False
