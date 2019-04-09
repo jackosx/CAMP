@@ -5,6 +5,6 @@ function setGenre(genreId) {
   //Send the proper header information along with the request
   xhr.setRequestHeader('Content-Type', 'application/json');
   console.log(genreId);
-  const body = JSON.stringify({ topic: 'g/{r,w}', payload: genreId });
+  const body = JSON.stringify({ topic: '/g', payload: genreId });
   xhr.send(body);
 }
