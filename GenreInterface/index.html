@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Genre Selection | CAMP</title>
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="favicon.png" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700|Poppins:900" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Playfair+Display:700|Poppins:900"
+      rel="stylesheet"
+    />
 
-    <link rel="stylesheet" href="normalize.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="normalize.css" />
+    <link rel="stylesheet" href="style.css" />
 
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -19,28 +22,27 @@
     <script src="script.js"></script>
 
     <script>
-        $(document).ready(function() {
-          $('p').click(function() {
-            $('p').css('color', 'white');
-            $(this).css('color', '#3A00FB');
-          });
+      $(document).ready(function() {
+        $('p').click(function() {
+          $('p').css('color', 'white');
+          $(this).css('color', '#3A00FB');
         });
+      });
     </script>
-
   </head>
 
   <body>
     <div id="left">
-      <h1>Pick<br>a genre</h1>
+      <h1>Pick<br />a genre</h1>
       <div id="box">
         <h2>Seriously, go ahead. Cool things await you.</h2>
-        <h2> Find one you like, and have some fun.</h2>
+        <h2>Find one you like, and have some fun.</h2>
       </div>
     </div>
-    <div id="genreSelect" onclick="setGenre(this.value)">
-      <p value="0">Rock</p>
-      <p value="1">Indie</p>
-      <p value="2">Jazz</p>
+    <div id="genreSelect">
+      <p value="0" onclick="setGenre(0)">Rock</p>
+      <p value="1" onclick="setGenre(1)">Indie</p>
+      <p value="2" onclick="setGenre(2)">Jazz</p>
     </div>
   </body>
 </html>
