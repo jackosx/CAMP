@@ -19,7 +19,7 @@ client.connect("manatee.local", 1883, 60)
 # manual interface.
 client.loop_start()
 
-guitar_topic = 'i/g/0/d/'
+guitar_topic = '/i/g/0/d/'
 # guitar = midi.Guitar()
 keys_pressed = set()
 valid_keys = {'a', 'b', 'c', 'd', 'e', 'f', 'g'}
@@ -29,6 +29,7 @@ def on_press(key):
         if key not in keys_pressed:
             keys_pressed.add(key)
             if key == keyboard.Key.space:
+                print("strumming")
                 client.publish(guitar_topic + 's', 100)
                 return
             k = key.char
