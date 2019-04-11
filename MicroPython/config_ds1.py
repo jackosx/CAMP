@@ -2,14 +2,14 @@
 
 instrument_type = 'drumstick'
 
-id = 0
+id = 1
 
-threshold = 20
+threshold = 15
 min_strike_scale = -50
 max_strike_scale = 28 # Used for velocity calc
 
 # Milliseconds between readings
-sample_frequency = 10
+sample_frequency = 5
 
 # ms for haptic buzz
 buzz_ms_min = 75
@@ -19,7 +19,7 @@ buzz_ms_max = 100
 buzz_pin = 2
 
 # Power to raise jerk to
-power = 0.5
+power = 0.7
 use_jerk = True
 
 # Debounce period
