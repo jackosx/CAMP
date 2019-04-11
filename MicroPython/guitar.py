@@ -52,8 +52,8 @@ def calibrate():
         strum_sensor.calibrate_step()
         for s in fret_sensors:
             s.calibrate_step()
-        
-        
+
+
 def set_touch_thresh(new_thresh):
     global touch_thresh
     touch_thresh = new_thresh
@@ -63,14 +63,14 @@ def update_fret(new_fret):
     print("NEW FRET",  new_fret)
     global active_fret
     active_fret = new_fret
-    client.publish('i/g/{}/d/f'.format(guitar_id), str(active_fret))
+    client.publish('/i/g/{}/d/f'.format(guitar_id), str(active_fret))
 
 # Called when strum detected, sends MQTT message
 def strum(velocity):
     global strumming
     strumming = True
     v = min(int(round(velocity*config.velocity_scale)), 127)
-    client.publish('i/g/{}/d/s'.format(guitar_id), str(v))
+    client.publish('/i/g/{}/d/s'.format(guitar_id), str(v))
     print("STRUM", v)
 
 # Read sensors, update fret touched and loof for strum.
