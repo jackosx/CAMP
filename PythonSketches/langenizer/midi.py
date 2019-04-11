@@ -13,6 +13,9 @@ import time
 import rtmidi
 import sys
 from collections import Counter
+import threading
+import queue
+import genres
 
 # TODO Note class? With MIDI and note name?
 base_notes = {
@@ -54,7 +57,6 @@ note_list = [s if s == f else s + '/' + f for s,
 # note_name: str that may or may not include octave
 # octave: optionally specify octave (-1 to 7) with int
 
-
 def note_to_MIDI(note_name, octave=None):
     if note_name is None:
         raise ValueError("No note provided!")
@@ -87,7 +89,6 @@ def MIDI_to_note(midi_id, sharps_only=False, flats_only=False):
         return note_list[note_i] + str(octave)
 
 # TODO make these more parameterized
-
 
 class Chords:
 
@@ -124,6 +125,8 @@ class Chords:
             return note_ids
 
 
+
+
 class Instrument:
 
     def __init__(self, midi_channel=0, midi_name="Python"):
@@ -139,8 +142,52 @@ class Instrument:
             self.midiout.open_virtual_port(midi_name)
             print("Opened", midi_name, "virtual port")
 
+        self.midi_queue = queue.PriorityQueue()
+        self.halt_flag = -1 # -1 is off, o.w. use number of queued notes to cancel on halt
+        self.worker = threading.Thread(target=self.async_work)
+        self.lock = threading.Lock()
+        self.cv = threading.Condition(self.lock)
+        self.worker.start()
+
+    def async_work(self):
+        has_item_or_halt = lambda : not self.midi_queue.empty() or self.halt_flag != -1
+        def halt_all():
+            # Empty remaining
+            for i in range(self.halt_flag):
+                if not self.midi_queue.empty():
+                    self.midi_queue.get_nowait()
+                    print("EMPTIED")
+            for n_id, count in self.notes_on.items():
+                for i in range(count):
+                    self.midiout.send_message([0x80 + self.midi_channel, n_id, 0])
+                self.notes_on[n_id] = 0
+            self.halt_flag = -1
+        # Work Loop
+        while True:
+            with self.cv:
+                self.cv.wait_for(has_item_or_halt)
+                if self.halt_flag != -1:
+                    halt_all()
+                else:
+                    midi_msg, delay = self.midi_queue.get_nowait()
+                    channel, midi_id, velocity = midi_msg
+                    if delay is not None:
+                        time.sleep(delay)
+                    if velocity > 0:
+                        self.notes_on[midi_id] += 1
+                    else:
+                        self.notes_on[midi_id] -= 1
+                    self.midiout.send_message(midi_msg)
+
+
+
+    def send_midi_async(self, midi_msg, delay=None):
+        with self.cv:
+            self.midi_queue.put((midi_msg, delay))
+            self.cv.notifyAll()
+
     # Send Note-On MIDI Message
-    def play_note(self, note_name=None, velocity=100, midi_id=None, duration=None):
+    def play_note(self, note_name=None, velocity=100, midi_id=None, delay=None):
         if note_name is not None and midi_id is None:
             midi_id = note_to_MIDI(note_name)
         elif midi_id is not None and note_name is None:
@@ -150,16 +197,13 @@ class Instrument:
         elif note_to_MIDI(note_name) != midi_id:
             raise ValueError("Provided note {} does not match provided MIDI id {}".format(
                 note_name, midi_id))
-
-        # channel 1, middle C, velocity 112
         note_on = [0x90+self.midi_channel, midi_id, velocity]
-        self.midiout.send_message(note_on)
-        self.notes_on[midi_id] += 1
-        print("Playing", note_name)  # TODO make for verbose mode only
+        self.send_midi_async(note_on,delay)
+        # # print("Playing", note_name)  # TODO make for verbose mode only
+        # if duration is not None:
+        #     time.sleep(duration)
+        #     self.stop_note(midi_id=midi_id)
 
-        if duration is not None:
-            time.sleep(duration)
-            self.stop_note(midi_id=midi_id)
 
     # Send Note-Off MIDI Message
     def stop_note(self, note_name=None, midi_id=None):
@@ -172,26 +216,25 @@ class Instrument:
         elif note_to_MIDI(note_name) != midi_id:
             raise ValueError("Provided note {} does not match provided MIDI id {}".format(
                 note_name, midi_id))
-
-        # TODO: Check if note is playing before sending?
         # channel 1, middle C, velocity 112
         note_off = [0x80+self.midi_channel, midi_id, 0]
-        self.midiout.send_message(note_off)
-        self.notes_on[midi_id] -= 1
-        print("Stopped", note_name)  # TODO make for verbose mode only
+        self.send_midi_async(note_off)
+        # print("Stopped", note_name)  # TODO make for verbose mode only
 
     # Send Note-Off MIDI Message for all playing notes
     def stop_all(self):
-        print("Halting instrument sounds")
-        for n_id, count in self.notes_on.items():
-            for i in range(count):
-                self.midiout.send_message([0x80 + self.midi_channel, n_id, 0])
-            self.notes_on[n_id] = 0
+        # print("Halting instrument sounds")
+        with self.cv:
+            self.halt_flag = self.midi_queue.qsize()
+            self.cv.notifyAll()
+
         # Neither of these were stopping the notes in Garageband
         # self.midiout.send_message([self.midi_channel, 120])
         # self.midiout.send_message([0xB0+self.midi_channel, 123, 0])
-
     # del midiout
+
+    def set_genre(self, genre):
+        print("Not implemented for pure Python instrument")
 
     # Set midi channel
     def set_midi_channel(self, channel):
@@ -223,8 +266,12 @@ class Guitar(Instrument):
 
     # Need strum worker thread
     def strum(self, velocity=100):
-        for note in self.chords[self.active_fret]:
-            self.play_note(note_name=note, velocity=velocity)
+        for i, note in enumerate(self.chords[self.active_fret]):
+            delay = 0.025
+            self.play_note(note_name=note, velocity=velocity, delay=delay)
+
+    def set_genre(self, genre):
+        print("Guitar genre not implemented")
 
 
 class Bass(Guitar):
@@ -243,12 +290,137 @@ class Bass(Guitar):
         intervals = [0, 4, 5, 7, 9, 12]
         self.chords = [(MIDI_to_note(root + i),) for i in intervals]
 
+    def set_genre(self, genre):
+        print("Bass genre not implemented")
 
+# ASSUMPTION: 4/4 time
+# Things to measure: speed, velocity, count, trends among these vars?
+# Bifurcate based on low-v-high velocity strikes?
+# Use flags or callbacks?
+class LiveMeter:
+    reset_threshold = .25
+
+    # Motivation for seemingly arbitrary thresholds:
+    # Other method would be to see if implied_BPM
+    # is closer to 1*BPM or 2*BPM, 2*BPM or 4*BPM
+    # and bucket linearly based on that
+    # This may allow us to tune better-feeling,
+    # non-linear buckets (maybe)
+    half_threshold = .6
+    eighth_threshold = 1.9
+    sixteenth_threshold = 3.5
+
+    # Double check gets/sets are efficient and correct
+    @property
+    def sixteenth_count(self):
+        return self._sixteenth_count
+    @sixteenth_count.setter
+    def sixteenth_count(self, value):
+        self._sixteenth_count = value % 16
+
+    @property
+    def eighth_count(self):
+        return self._sixteenth_count // 2
+    @eighth_count.setter
+    def eighth_count(self, value):
+        self._eighth_count = value % 8
+        self._sixteenth_count = self._eighth_count * 2
+
+    @property
+    def beat_count(self):
+        return self._sixteenth_count // 4
+    @beat_count.setter
+    def beat_count(self, value):
+        self._beat_count = value % 4
+        self._eighth_count = self._beat_count * 2
+        self._sixteenth_count = self._beat_count * 4
+
+
+    def __init__(self, bpm=110):
+        self.set_bpm(bpm)
+        self.last_timestamp = 0
+        self.was_beat      = False
+        self.was_eighth    = False
+        self.was_sixteenth = False
+        self.beat_count = 0
+
+    def set_bpm(self, bpm):
+        self.bpm = bpm
+
+    def record_input(self, velocity=90):
+        new_time = time.clock_gettime(0)
+        diff = new_time - self.last_timestamp # Need to figure out diff b/w sticks?
+        implied_BPM = 60/diff
+        self.last_timestamp = new_time
+        print("Implied BPM:{:.0f}".format(implied_BPM))
+        if implied_BPM > LiveMeter.sixteenth_threshold * self.bpm:
+            self.was_sixteenth = True
+            self.sixteenth_count += 1
+                # Two quick ones...but not sure what it means?
+            print("16th")
+        elif implied_BPM > LiveMeter.eighth_threshold * self.bpm:
+            # Do eighth note things (half beat)
+            self.eighth_count += 1
+            self.was_sixteenth = False # Rule: Cannot be faster than test?
+            self.was_eighth = True
+            self.was_beat = not self.was_beat
+        elif implied_BPM < LiveMeter.reset_threshold * self.bpm:
+            # PERFORM RESET
+            self.sixteenth_count = 0
+            self.was_beat = True
+            self.was_eighth = False
+            self.was_sixteenth = False
+        else: #presumably slow, beat setting? not accounting for half notes yet
+            self.was_beat = True
+            self.was_eighth = False
+            self.was_sixteenth = False
+            self.beat_count += 1
+
+
+# Per Drumstick:
+# Should these vars be single notes, or possible tuples?
+# Half_notes: [a, b]
+# Quarter_notes: [a, b, c, d]
+# Eighth_notes: [a, b, c, d,
+#                e, f, g, h]
+# Sixteenth_notes: [a, b, c, d,
+#                   e, f, g, h,
+#                   i, j, k, l
+#                   m, n, o, p]
+# Boolean was_thing flags enable this tiered setting, otherwise simple
+# array of 16 notes
+# Tiered system basically enables 'intensity'
+# Alternatively, have different 16-note sequences for different intensities
+# For example, imagine someone drumming twice in a measure — probably want "dum"-"dum"
+# But if going faster may want snare or cymbal with kick on downbeat? Or would this be covered by the second stick?
 class Drum(Instrument):
-    def __init__(self, channel=9, midi_name="Drums"):
+    def __init__(self, channel=9, midi_name="Drums",drum_id=0):
         Instrument.__init__(self, channel, midi_name=midi_name)
-        self.drums = ['f2', 'd2', 'a#2']
+        self.drum_id = drum_id
+        self.strike_timestamp = 0
+        self.lm = LiveMeter()
+        self.set_genre(genres.genre_list[0]) # TODO: improve
 
-    def strike(self, drum_num, velocity):
-        self.play_note(note_name=self.drums[drum_num], velocity=velocity)
-        self.stop_note(note_name=self.drums[drum_num])
+    def play_hit(self, note_name=None, velocity=90):
+        self.play_note(note_name=note_name, velocity=velocity)
+        self.stop_note(note_name=note_name)
+
+    # Probably remove drum_num arg since one instance per stick?
+    def strike(self, velocity=90):
+        self.lm.record_input(velocity)
+        self.play_hit(self.quarters[self.lm.beat_count],velocity=velocity)
+        # if self.lm.was_beat:
+        #     self.play_hit(self.quarters[self.lm.beat_count],velocity=velocity)
+        # if self.lm.was_eighth: # Only true on beat if the previous hit was half a beat away
+        #     self.play_hit(self.eighths[self.lm.eighth_count],velocity=velocity)
+        #     print("EIGHTH")
+        # if self.lm.was_sixteenth:
+        #     print("Sixteenth")
+        #     self.play_hit(self.sixteenths[self.lm.sixteenth_count],velocity=velocity)
+
+    def set_genre(self, genre):
+        drums = genre.drums[self.drum_id]
+        self.halves = drums.halves
+        self.quarters = drums.quarters
+        self.eighths = drums.eighths
+        self.sixteenths = drums.sixteenths

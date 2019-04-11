@@ -25,7 +25,7 @@ def hit_beat():
         global items
         items = q4.get_nowait()
         f, args, kwargs = items[0], items[1], items[2]
-        f(*args)
+        f(*args, **kwargs)
 
 def hit_eighth():
     global prev_8
