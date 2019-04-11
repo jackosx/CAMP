@@ -9,45 +9,30 @@ from pythonosc import dispatcher
 from pythonosc import osc_server
 import midi
 import metronome
+import genres
+
+genres = genres.genre_list
 
 m = metronome.ticker.start()
 
-
-genres = [
-    {
-        "name": "Rock",
-        "channel": 0
-    },
-    {
-        "name": "Jazz",
-        "channel": 1
-    },
-    {
-        "name": "Country",
-        "channel": 2
-    }
-]
-
-guitars = [midi.Guitar(channel=genres[0]["channel"], key="G",
-                       octave=3, ), midi.Bass(key='G', octave=1)]
-drums = midi.Drum()
+guitars = [ midi.Bass(key='G', octave=1),
+            midi.Guitar(channel=genres[0].channel, key="G", octave=3)]
+drums = [midi.Drum(channel=genres[0].channel, drum_id=i) for i in range(2)]
 
 
 def on_guitar_message_mqtt(client, userdata, msg):
     on_guitar_message(msg.topic, msg.payload)
 
-
 def on_guitar_message(channel, payload):
-    print("Guitar Message", channel, payload)
-    guitar_num = int(channel[4])
+    # print("Guitar Message", channel, payload)
+    guitar_num = int(channel[5])
     guitar = guitars[guitar_num]
-    action = channel[6]
+    action = channel[7]
     sensor_val = int(float(payload))
     if action == 'd':
-        user_action = channel[8]
-        print(user_action)
+        user_action = channel[9]
         if user_action == 's':
-            print("Strum")
+            # print("Strum")
             guitar.strum(sensor_val)
             # metronome.on_next_beat(guitar.strum, sensor_val)
         elif user_action == 'f':
@@ -57,19 +42,14 @@ def on_guitar_message(channel, payload):
 def on_drum_message_mqtt(client, userdata, msg):
     on_drum_message(msg.topic, msg.payload)
 
-
 def on_drum_message(channel, payload):
-    drumkit_num = int(channel[4])
+    drumkit_num = int(channel[5])
     sensor_val = int(float(payload))
     action = channel[7]
-    print("Drum Message", channel, sensor_val)
     if action == 'd':  # d for 'data'
-        user_action = channel[8]
-        print(user_action)
-        if user_action == 's':  # s for strum
-            print("Drum")
-            drum_num = int(channel[11])
-            drums.strike(drum_num, sensor_val)
+        user_action = channel[9]
+        if user_action == 's':  # s for strike
+            drums[drumkit_num].strike(sensor_val)
 
 
 def on_genre_message_mqtt(client, userdata, msg):
@@ -80,16 +60,15 @@ def on_genre_message_mqtt(client, userdata, msg):
 
 
 def on_connect_mqtt(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
+    print("Connected to MQTT with result code "+str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
     # Topic format
     # i/{g,d}/{inst_num}/{d,c}/[xtra]
-    client.subscribe("i/+/+/#")
-    client.subscribe("g/{r,w}")
-    client.message_callback_add(
-        "i/g/+/#", on_guitar_message_mqtt)  # for guitar messages
-    client.message_callback_add("i/d/+/#", on_drum_message_mqtt)
+    client.subscribe("/i/+/+/#")
+    client.subscribe("/g/{r,w}")
+    client.message_callback_add("/i/g/+/#", on_guitar_message_mqtt)  # for guitar messages
+    client.message_callback_add("/i/d/+/#", on_drum_message_mqtt)
     client.message_callback_add("g/{r,w}", on_genre_message_mqtt)
 
 
@@ -104,14 +83,14 @@ client.on_message = on_message_mqtt
 
 client.connect("manatee.local", 1883, 60)
 
-"""dispatcher = dispatcher.Dispatcher()
-dispatcher.map("/*", print)
+dispatcher = dispatcher.Dispatcher()
+dispatcher.map("/*", print) # PRINT ALL MESSAGES
 dispatcher.map("/i/g/*", on_guitar_message)
 dispatcher.map("/i/d/*", on_drum_message)
 server = osc_server.ThreadingOSCUDPServer(
-    ("dan.local", 5005), dispatcher)
+    ("jack.local", 5005), dispatcher)
 print("Serving on {}".format(server.server_address))
-server.serve_forever()"""
+server.serve_forever()
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
