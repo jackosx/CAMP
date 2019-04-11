@@ -2,6 +2,8 @@ import network
 import leds
 from uosc.client import Bundle, Client, create_message
 import config
+from machine import Pin
+import time
 
 sta_if = network.WLAN(network.STA_IF)
 target = b'camp-manatee'
@@ -61,6 +63,10 @@ def connect_wifi(target=b'camp-manatee', timeout=30):
                         leds.show_success()
                         print("Woo! Connected to CAMP Manatee")
                         print('network config:', sta_if.ifconfig())
+                        led = Pin(2, Pin.OUT)
+                        for i in range(10):
+                            led.value(not led.value())
+                            time.sleep(0.25)
                         mdns.start("ESP32", "ESP32 MicroPython Instrument")
                         break
                 print('')

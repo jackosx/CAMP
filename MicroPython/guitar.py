@@ -24,76 +24,94 @@
 
 
 import machine
-from umqtt.simple import MQTTClient
+import mannet
 import config
 import touchpad
 import time
+import capsensor
 
 guitar_id = config.id
 stdev_trigger = config.stdev_trigger
 
-client = MQTTClient("guitar-{}".format(config.id), "manatee.local")
-client.connect()
-
 # See wiki for pinout: https://github.com/jackosx/CAMP/wiki/ESP32-Hardware
 # For skinnier board see printout it shipped with
-fret_sensors = [touchpad.TouchPad(p, stdev_trigger) for p in config.fret_pins]
-strum_sensor = touchpad.TouchPad(config.strum_pins[0], stdev_trigger) # eventually more pins will be used for strumming
+# fret_sensors = [touchpad.TouchPad(p, stdev_trigger) for p in config.fret_pins]
+# strum_sensor = touchpad.TouchPad(config.strum_pins[0], stdev_trigger) # eventually more pins will be used for strumming
+i2c = machine.I2C(scl=config.scl, sda=config.sda)
+fret = capsensor.CapSensor(i2c=i2c, addr=config.fret_addr)
+strm = capsensor.CapSensor(i2c=i2c, addr=config.strum_addr)
 
-touch_thresh = config.threshold
-strum_thresh = config.strum_threshold
+# touch_thresh = config.threshold
+# strum_thresh = config.strum_threshold
 
 active_fret = 0
 strumming = False
 
 def calibrate():
-    for i in range(400):
-        time.sleep_ms(config.sample_frequency)
-        strum_sensor.calibrate_step()
-        for s in fret_sensors:
-            s.calibrate_step()
+    fret.recalibrate()
+    strm.recalibrate()
+    # for i in range(400):
+    #     time.sleep_ms(config.sample_frequency)
+    #     strum_sensor.calibrate_step()
+    #     for s in fret_sensors:
+    #         s.calibrate_step()
 
 
-def set_touch_thresh(new_thresh):
-    global touch_thresh
-    touch_thresh = new_thresh
+# def set_touch_thresh(new_thresh):
+#     global touch_thresh
+#     touch_thresh = new_thresh
 
 # Called when the active fret changes, sends MQTT message
 def update_fret(new_fret):
     print("NEW FRET",  new_fret)
     global active_fret
     active_fret = new_fret
-    client.publish('/i/g/{}/d/f'.format(guitar_id), str(active_fret))
+    mannet.send_message('/i/g/{}/d/f'.format(guitar_id), str(active_fret))
 
 # Called when strum detected, sends MQTT message
 def strum(velocity):
     global strumming
     strumming = True
     v = min(int(round(velocity*config.velocity_scale)), 127)
-    client.publish('/i/g/{}/d/s'.format(guitar_id), str(v))
+    v = max(0, v)
+    #hard coding velocity for now
+    mannet.send_message('/i/g/{}/d/s'.format(guitar_id), str(100))
     print("STRUM", v)
 
 # Read sensors, update fret touched and loof for strum.
 # To be called frequently.
 def sample(verbose=False):
     global strumming
-    max_zstat  = 0
-    best_fret = 0 # Default to no fret touched
-    for i, t in enumerate(fret_sensors):
-        zstat = t.read()
-        abov_thresh = zstat - stdev_trigger
-        if verbose:
-            print(i, zstat)
-        if zstat >  stdev_trigger:
-            max_zstat = zstat
-            best_fret = i + 1
-    if best_fret != active_fret:
-        update_fret(best_fret)
-    strum_zstat = strum_sensor.read()
-    strum_diff = stdev_trigger - strum_zstat
-    if verbose:
-        print("Strum:", strum_zstat)
-    if strum_zstat > stdev_trigger and strumming is False:
-        strum(strum_zstat)
-    elif strumming is True and strum_zstat <= stdev_trigger:
+    fret_tuple = fret.touched_pins()
+    strm_tuple = strm.touched_pins()
+    strum_pin_index = config.strum_pin - 1
+    for j in range(8):
+        if (fret_tuple[j]):
+            if (j != active_fret):
+                update_fret(j)
+            break
+
+    if (strm_tuple[strum_pin_index] and strumming is False):
+        strum(strm.delta_count(config.strum_pin))
+    elif strumming is True and not strm_tuple[strum_pin_index]:
         strumming = False
+
+
+    # max_zstat  = 0
+    # best_fret = 0 # Default to no fret touched
+    # for i, t in enumerate(fret_sensors):
+    #     zstat = t.read()
+    #     abov_thresh = zstat - stdev_trigger
+    #     if verbose:
+    #         print(i, zstat)
+    #     if zstat >  stdev_trigger:
+    #         max_zstat = zstat
+    #         best_fret = i + 1
+    # if best_fret != active_fret:
+    #     update_fret(best_fret)
+    # if verbose:
+    #     print("Strum:", strum_zstat)
+    # if strum_zstat > stdev_trigger and strumming is False:
+    #     strum(strum_zstat)
+    # elif strumming is True and strum_zstat <= stdev_trigger:
+    #     strumming = False

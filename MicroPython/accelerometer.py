@@ -51,8 +51,8 @@ class Accelerometer:
         self.write_u8(Accelerometer._MMA8451_REG_CTRL_REG2, 0x40)
         while ((self.read_u8(Accelerometer._MMA8451_REG_CTRL_REG2) & 0x40) > 0):
             print("\t WAITING")
-        print("Enable 8g mode")
-        self.write_u8(Accelerometer._MMA8451_REG_XYZ_DATA_CFG, Accelerometer.RANGE_8G)
+        print("Enable 4g mode")
+        self.write_u8(Accelerometer._MMA8451_REG_XYZ_DATA_CFG, Accelerometer.RANGE_4G)
         print("High res mode")
         self.write_u8(Accelerometer._MMA8451_REG_CTRL_REG2, 0x02)
         print("DRDY on INT1")
@@ -79,10 +79,11 @@ class Accelerometer:
         x >>= 2
         y >>= 2
         z >>= 2
-        x=x/1024.0*Accelerometer._SENSORS_GRAVITY_EARTH
-        y=y/1024.0*Accelerometer._SENSORS_GRAVITY_EARTH
-        z=z/1024.0*Accelerometer._SENSORS_GRAVITY_EARTH
         # print("{:4.4f}, {:4.4f}, {:4.4f}".format(x, y, z))
+        x=x/2048.0*Accelerometer._SENSORS_GRAVITY_EARTH
+        y=y/2048.0*Accelerometer._SENSORS_GRAVITY_EARTH
+        z=z/2048.0*Accelerometer._SENSORS_GRAVITY_EARTH
+        print("{:4.4f}, {:4.4f}, {:4.4f}".format(x, y, z))
         return (x, y, z)
 
     def get_orient(self):

@@ -2,39 +2,47 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <title>Genre Selection | CAMP</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Playfair+Display:700|Poppins:900"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="normalize.css" />
+    <link rel="stylesheet" href="style.css" />
+
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
       crossorigin="anonymous"
     ></script>
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/css/bootstrap.min.css"
-      integrity="sha384-PDle/QlgIONtM1aqA2Qemk5gPOE7wFq8+Em+G/hmo5Iq0CCmYZLv3fVRDJ4MMwEA"
-      crossorigin="anonymous"
-    />
-    <script
-      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/js/bootstrap.min.js"
-      integrity="sha384-7aThvCh9TypR7fIc2HV4O/nFMVCBwyIUKL8XCtKE+8xgCgl/PQGuFsvShjr74PBp"
-      crossorigin="anonymous"
-    ></script>
-    <!----<script src="https://unpkg.com/mqtt@2.18.8/dist/mqtt.min.js"></script> -->
-    <script src="./script.js"></script>
-    <title>CAMP</title>
+    <script src="script.js"></script>
+
+    <script>
+      $(document).ready(function() {
+        $('p').click(function() {
+          $('p').css('color', 'white');
+          $(this).css('color', '#3A00FB');
+        });
+      });
+    </script>
   </head>
 
   <body>
-    <div class="col-md-3">
-      <h1>Select a genre:</h1>
-      <select
-        class="custom-select custom-select-sm"
-        id="genreSelect"
-        onchange="setGenre(this.value)"
-      >
-        <option value="0">Rock</option>
-        <option value="1">Jazz</option>
-        <option value="2">Country</option>
-      </select>
+    <div id="left">
+      <h1>Pick<br />a genre</h1>
+      <div id="box">
+        <h2>Seriously, go ahead. Cool things await you.</h2>
+        <h2>Find one you like, and have some fun.</h2>
+      </div>
+    </div>
+    <div id="genreSelect">
+      <p value="0" onclick="setGenre(0)">Rock</p>
+      <p value="1" onclick="setGenre(1)">Indie</p>
+      <p value="2" onclick="setGenre(2)">Jazz</p>
     </div>
   </body>
 </html>

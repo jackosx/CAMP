@@ -33,11 +33,11 @@ class CapSensor:
 
     _SENSITIVITY = (128, 64, 32, 16, 8, 4, 2, 1)
 
-    def __init__(self, scl=21, sda=22):
+    def __init__(self, i2c, addr):
         self.six_byte_buffer = bytearray(6)
         self.one_byte_buffer = bytearray(1)
-        self.i2c = machine.I2C(scl=machine.Pin(scl), sda=machine.Pin(sda))
-        self.address = 41#self.i2c.scan()[0]
+        self.i2c = i2c
+        self.address = addr
         print("Reset and wait for chip to be ready.")
         mid = self._read_register(_CAP1188_MANU_ID)
         if mid != _CAP1188_MID:
@@ -47,7 +47,9 @@ class CapSensor:
             raise RuntimeError('Failed to find CAP1188! Product ID: 0x{:02x}'.format(pid))
         self._channels = [None]*8
         self._write_register(_CAP1188_LED_LINKING, 0xFF)     # turn on LED linking
-        self._write_register(_CAP1188_MULTI_TOUCH_CFG, 0x00) # allow multi touch
+        self._write_register(_CAP1188_MULTI_TOUCH_CFG, 0x80) # allow multi touch
+        self._write_register(0x2B, 0x00) # Multiple Touch Pattern Config
+        self._write_register(0x2D, 0xFF) # Multiple Touch Pattern Register
         self._write_register(0x2F, 0x10) # turn off input-1-sets-all-inputs feature, Recalibration Configuration reg
         self.recalibrate()
 
@@ -108,7 +110,7 @@ class CapSensor:
         if pin < 1 or pin > 8:
             raise IndexError('Pin must be a value 1-8.')
         # 8 bit 2's complement
-        raw_value = self._read_register(_CAP1188_DELTA_COUNT[pin-1])
+        raw_value = self._read_register(self._CAP1188_DELTA_COUNT[pin-1])
         raw_value = raw_value - 256 if raw_value & 128 else raw_value
         return raw_value
 
