@@ -1,0 +1,79 @@
+[
+  {
+    "id": 0,
+    "name": "Rock",
+    "channel": 0,
+    "drums": [
+      {
+        "halves": ["f2", "f2"],
+        "quarters": ["c3", "c3", "c3", "c3"],
+        "eighths": ["d2", "d2", "d2", "d2", "d2", "d2", "d2", "d2"],
+        "sixteenths": [
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2"
+        ]
+      },
+      {
+        "halves": ["f2", "f2"],
+        "quarters": ["f2", "f2", "f2", "f2"],
+        "eighths": ["d2", "d2", "d2", "d2", "b2", "d#1", "d2", "d2"],
+        "sixteenths": [
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2",
+          "a#2"
+        ]
+      }
+    ],
+    "guitar": {},
+    "bass": {}
+  },
+  {
+    "id": 1,
+    "name": "Jazz",
+    "channel": 1,
+    "drums": [
+      { "halves": [], "quarters": [], "eighths": [], "sixteenths": [] },
+      { "halves": [], "quarters": [], "eighths": [], "sixteenths": [] }
+    ],
+    "guitar": {},
+    "bass": {}
+  },
+  {
+    "id": 2,
+    "name": "Country",
+    "channel": 2,
+    "drums": [
+      { "halves": [], "quarters": [], "eighths": [], "sixteenths": [] },
+      { "halves": [], "quarters": [], "eighths": [], "sixteenths": [] }
+    ],
+    "guitar": {},
+    "bass": {}
+  }
+]

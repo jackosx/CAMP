@@ -1,60 +1,4 @@
-
-# Human Readable / JSON Compatible
-genres_readable = [
-    {
-        "name": "Rock",
-        "channel": 0,
-        "drums":[{"halves": ['f2', 'f2'],
-                  "quarters"   : ['c3', 'c3', 'c3', 'c3'],
-                  "eighths"    : ['d2', 'd2','d2', 'd2',
-                                  'd2', 'd2','d2', 'd2'],
-                  "sixteenths" : ['a#2','a#2','a#2','a#2',
-                                   'a#2','a#2','a#2','a#2',
-                                   'a#2','a#2','a#2','a#2',
-                                   'a#2','a#2','a#2','a#2',]
-                       },
-                  {"halves": ['f2', 'f2'],
-                             "quarters"   : ['f2', 'f2', 'f2', 'f2'],
-                             "eighths"    : ['d2', 'd2','d2', 'd2',
-                                             'b2', 'd#1','d2', 'd2'],
-                             "sixteenths" : ['a#2','a#2','a#2','a#2',
-                                              'a#2','a#2','a#2','a#2',
-                                              'a#2','a#2','a#2','a#2',
-                                              'a#2','a#2','a#2','a#2',]
-                                  }],
-       "guitar":{},
-       "bass":{}
-
-    },
-    {
-        "name": "Jazz",
-        "channel": 1,
-        "drums":[{"halves" : [],
-                   "quarters" : [],
-                   "eighths" : [],
-                   "sixteenths" : []},
-                 {"halves":[],
-                   "quarters":[],
-                   "eighths":[],
-                   "sixteenths":[]}],
-       "guitar":{},
-       "bass":{}
-    },
-    {
-        "name": "Country",
-        "channel": 2,
-        "drums":[{"halves" : [],
-                   "quarters" : [],
-                   "eighths" : [],
-                   "sixteenths" : []},
-                 {"halves":[],
-                   "quarters":[],
-                   "eighths":[],
-                   "sixteenths":[]}],
-       "guitar":{},
-       "bass":{}
-    },
-]
+import json
 
 class Genre(object):
     """Python Genre Class"""
@@ -75,4 +19,6 @@ class GenreDrums(object):
         self.eighths= note_dict["eighths"]
         self.sixteenths = note_dict["sixteenths"]
 
-genre_list = [Genre(g) for g in genres_readable]
+with open('genres.json') as json_file:  
+    genres = json.load(json_file) 
+    genre_list = [Genre(g) for g in genres]
