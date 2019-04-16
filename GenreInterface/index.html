@@ -31,7 +31,7 @@
     </script>
   </head>
 
-  <body>
+  <body onload="loadGenres()">
     <div id="left">
       <h1>Pick<br />a genre</h1>
       <div id="box">
@@ -39,10 +39,6 @@
         <h2>Find one you like, and have some fun.</h2>
       </div>
     </div>
-    <div id="genreSelect">
-      <p value="0" onclick="setGenre(0)">Rock</p>
-      <p value="1" onclick="setGenre(1)">Indie</p>
-      <p value="2" onclick="setGenre(2)">Jazz</p>
-    </div>
+    <div id="genreSelect"></div>
   </body>
 </html>
