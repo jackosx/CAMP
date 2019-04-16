@@ -85,11 +85,17 @@ def sample(verbose=False):
     fret_tuple = fret.touched_pins()
     strm_tuple = strm.touched_pins()
     strum_pin_index = config.strum_pin - 1
+    
+    any_fret = False
     for j in range(8):
         if (fret_tuple[j]):
-            if (j != active_fret):
-                update_fret(j)
+            if (j+1 != active_fret):
+                update_fret(j + 1)
+            any_fret = True
             break
+  
+    if not any_fret and active_fret != 0:
+        update_fret(0)
 
     if (strm_tuple[strum_pin_index] and strumming is False):
         strum(strm.delta_count(config.strum_pin))
