@@ -256,7 +256,8 @@ class Guitar(Instrument):
                        Chords.get_five(key, octave, True),
                        Chords.get_one(key, octave+1, True),
                        Chords.get_four(key, octave+1, True),
-                       Chords.get_five(key, octave+1, True)]
+                       Chords.get_five(key, octave+1, True),
+                       Chords.get_one(key, octave+2, True)]
 
     def set_fret(self, fret_num):
         # if self.active_fret == fret_num:
@@ -271,7 +272,7 @@ class Guitar(Instrument):
             self.play_note(note_name=note, velocity=velocity, delay=delay)
 
     def set_genre(self, genre):
-        print("Guitar genre not implemented")
+        self.midi_channel = genre.channel
 
 
 class Bass(Guitar):
@@ -287,11 +288,12 @@ class Bass(Guitar):
         # 9 9 0 9 7 5 4
         root = note_to_MIDI(note_name=key, octave=octave)
         #             | 0  |   1   |   2   |   3   |   4   |   5   |
-        intervals = [0, 4, 5, 7, 9, 12]
+        intervals = [0, 4, 5, 7, 9, 12, 13]
         self.chords = [(MIDI_to_note(root + i),) for i in intervals]
 
     def set_genre(self, genre):
-        print("Bass genre not implemented")
+        print("Changing bass channel from", self.midi_channel, "to", genre.channel)
+        self.midi_channel = genre.channel
 
 # ASSUMPTION: 4/4 time
 # Things to measure: speed, velocity, count, trends among these vars?

@@ -51,6 +51,11 @@ def on_drum_message(channel, payload):
         if user_action == 's':  # s for strike
             drums[drumkit_num].strike(sensor_val)
 
+def on_genre_message(channel, genre_num):
+    print("GENRE",genre_num)
+    genre = genres[genre_num]
+    for g in guitars:
+        g.set_genre(genre)
 
 def on_genre_message_mqtt(client, userdata, msg):
     print("Genre message", msg.topic, msg.payload)
@@ -87,6 +92,7 @@ dispatcher = dispatcher.Dispatcher()
 dispatcher.map("/*", print) # PRINT ALL MESSAGES
 dispatcher.map("/i/g/*", on_guitar_message)
 dispatcher.map("/i/d/*", on_drum_message)
+dispatcher.map("/g*",on_genre_message)
 server = osc_server.ThreadingOSCUDPServer(
     ("jack.local", 5005), dispatcher)
 print("Serving on {}".format(server.server_address))
