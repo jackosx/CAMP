@@ -20,15 +20,6 @@
       crossorigin="anonymous"
     ></script>
     <script src="script.js"></script>
-
-    <script>
-      $(document).ready(function() {
-        $('p').click(function() {
-          $('p').css('color', 'white');
-          $(this).css('color', '#3A00FB');
-        });
-      });
-    </script>
   </head>
 
   <body onload="loadGenres()">
@@ -39,6 +30,12 @@
         <h2>Find one you like, and have some fun.</h2>
       </div>
     </div>
-    <div id="genreSelect"></div>
+    <div id="right">
+      <div id="genreSelect"></div>
+      <div id="keyContainer">
+        <p>You're playing in the key of:</p>
+        <p id="key"></p>
+      </div>
+    </div>
   </body>
 </html>

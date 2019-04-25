@@ -3,6 +3,7 @@
     "id": 0,
     "name": "Rock",
     "channel": 0,
+    "key": "eb",
     "drums": [
       {
         "halves": ["f2", "f2"],
@@ -58,6 +59,7 @@
     "id": 1,
     "name": "Jazz",
     "channel": 1,
+    "key": "bb",
     "drums": [
       { "halves": [], "quarters": [], "eighths": [], "sixteenths": [] },
       { "halves": [], "quarters": [], "eighths": [], "sixteenths": [] }
@@ -69,6 +71,7 @@
     "id": 2,
     "name": "Country",
     "channel": 2,
+    "key": "c",
     "drums": [
       { "halves": [], "quarters": [], "eighths": [], "sixteenths": [] },
       { "halves": [], "quarters": [], "eighths": [], "sixteenths": [] }

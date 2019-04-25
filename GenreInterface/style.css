@@ -36,10 +36,10 @@ h2 {
   font-size: 32px;
   margin: 0 !important;
 }
-#genreSelect {
-  margin-right: 110px;
+#right {
+  margin-right: 210px;
 }
-p {
+h3 {
   font-family: 'Poppins', sans-serif;
   color: white;
   font-size: 72px;
@@ -47,6 +47,21 @@ p {
   transition: 0.3s;
   margin: 0;
 }
-p:hover {
+h3:hover {
   color: #3a00fb !important;
+}
+p {
+  font-family: 'Poppins', sans-serif;
+  color: white;
+  font-size: 36px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin: 0;
+}
+#keyContainer {
+  margin-top: 60px;
+}
+#key {
+  color: #3a00fb !important;
+  font-size: 48px;
 }
